@@ -1,5 +1,5 @@
 {
-    "name": "deminy/xmpp",
+    "name": "catapush/xmpp",
     "description": "A client library for talking to XMPP servers.",
     "license": "MIT",
     "keywords": [
