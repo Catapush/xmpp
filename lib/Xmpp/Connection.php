@@ -329,18 +329,43 @@ class Connection
 
         $fromServer = false;
 
+
         // If there is nothing left in the buffer, wait for the stream to update
-        if (count($this->buffer) == 0 && $this->stream->select() > 0) {
+//        if (count($this->buffer) == 0 && $this->stream->select() > 0) {
+
+        // removed check for select, if I'm here I'm expecting something!
+        // the read is blocking so read until something is coming
+        // there is some case in which buffer is not zero?
+        // should never happen for our scenario with all sync operations
+        if (count($this->buffer) == 0) {
             $response = '';
             $done     = false;
 
             while (!$done) {
                 // Read data from the connection.
                 $response .= $this->stream->read(4096);
-                if ($this->stream->select() == 0) {
-                    $done = true;
-                } else {
-                    usleep(self::USLEEP_TIME);
+                
+                // I think this will never happen because all our XMPP is under 4k
+                $numberOfStreams = $this->stream->select();
+                if ($numberOfStreams === false) {
+                    // signal received, maybe server restart?
+                    $this->logger->debug('Signal received, server restart? Response: ' . $response);
+                    if ($response == ''){
+                        // if respose is empty return false
+                        return false;
+                    }
+                    else{
+                        // if there is something in the response try to process it
+                        $done = true;
+                    }
+                }
+                else{
+                    if ($numberOfStreams == 0) {
+                        $done = true;
+                    } else {
+                        // I think this is no sense, 5 ms?! the waiting is inside the select and is 200ms
+                        usleep(self::USLEEP_TIME);
+                    }                    
                 }
             }
 
@@ -417,7 +442,8 @@ class Connection
                 $this->logger->debug("We're waiting for tag '{$tag}', but the response is blank.");
             }
         } else {
-            $this->logger->debug("Tag we're waiting for '{$tag}' not presenting.");
+//            $this->logger->debug("Tag we're waiting for '{$tag}' not presenting.");
+            $this->logger->debug("Tag we're waiting for '{$tag}' with no empty buffer, process a previous response?!");
         }
 
         $this->logger->debug('Contents of $fromServer: ' . var_export($fromServer, true));
