@@ -337,6 +337,7 @@ class Connection
         // the read is blocking so read until something is coming
         // there is some case in which buffer is not zero?
         // should never happen for our scenario with all sync operations
+        $this->logger->debug('count(buffer): ' . count($this->buffer));
         if (count($this->buffer) == 0) {
             $response = '';
             $done     = false;
