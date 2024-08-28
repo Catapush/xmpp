@@ -109,8 +109,11 @@ class Stream
     {
         $read = array($this->stream->getResource());
         $write = $except = array();
-
-        return stream_select($read, $write, $except, 0, 200000);
+        $timeout = 200000;
+        if(defined('XMPP_REMOVE_WRONG_TIMEOUT')){
+            $timeout = 0;
+        }
+        return stream_select($read, $write, $except, 0, $timeout);
     }
 
     /**
