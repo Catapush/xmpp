@@ -343,7 +343,7 @@ class Connection
             $done     = false;
 
             while (!$done) {
-                // Read data from the connection.
+                // Read data from the connection, this is blocking!
                 $response .= $this->stream->read(4096);
                 
                 // I think this will never happen because all our XMPP is under 4k
